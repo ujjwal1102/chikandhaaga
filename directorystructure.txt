@@ -1,0 +1,31 @@
+/chikandhaaga
+├── functions/
+│   └── data.js             # The Serverless Function (your backend)
+├── public/
+│   └── index.html
+├── src/
+│   ├── components/
+│   │   ├── admin/          # Admin Panel UI Components
+│   │   │   ├── CategoryAdmin.jsx
+│   │   │   ├── FabricAdmin.jsx
+│   │   │   ├── ItemForm.jsx      # Reusable form for simple items
+│   │   │   ├── Modal.jsx
+│   │   │   ├── ProductAdmin.jsx
+│   │   │   └── ProductForm.jsx
+│   │   ├── categories.jsx
+│   │   ├── features.jsx
+│   │   ├── Footer.jsx      # (Assuming you have these)
+│   │   ├── header.jsx
+│   │   ├── ShopByFabric.jsx
+│   │   ├── ShopCard.jsx
+│   │   └── slider.jsx
+│   ├── pages/
+│   │   ├── AdminDashboard.jsx  # Main layout for the admin panel
+│   │   └── HomePage.jsx        # Your main e-commerce site
+│   ├── App.css
+│   ├── App.jsx               # Main Router
+│   └── index.css
+├── .gitignore
+├── netlify.toml            # Netlify configuration
+├── package.json
+└── tailwind.config.js

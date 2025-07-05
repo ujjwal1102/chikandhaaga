@@ -1,0 +1,125 @@
+// import { useState } from 'react'
+// import './App.css'
+// import NavbarBasic from './components/header'
+// import CarouselIndicatorsInside from './components/slider'
+// import FabricMarquee from './components/features'
+// import CardEcommerce from './components/typesStaticCard'
+// import ShopCard from './components/ShopCard'
+// import Categories from './components/categories'
+// import ShopByFabric from './components/ShopByFabric'
+// import ChikanDhaagaFooter from './components/Footer'
+
+// function App() {
+//   const [count, setCount] = useState(0)
+
+//   return (
+//     <>
+//     <NavbarBasic/>
+//     <CarouselIndicatorsInside/>
+//     <Categories/>
+//     <FabricMarquee/>
+//     <ShopCard/>
+//     <CardEcommerce/>
+//     <ShopByFabric/>
+//     <ChikanDhaagaFooter/>
+//     </>
+//   )
+// }
+
+// export default App
+import React, { useState, useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import HomePage from './pages/HomePage';
+import AdminDashboard from './pages/AdminDashboard';
+import './App.css';
+
+// This is now the main orchestrator for your application
+function App() {
+  const [db, setDb] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  // Function to fetch the entire database from JSONBin.io
+  const fetchData = async () => {
+    // Vite uses import.meta.env to access environment variables
+    const binId = import.meta.env.VITE_JSONBIN_BIN_ID;
+    const masterKey = import.meta.env.VITE_JSONBIN_MASTER_KEY;
+    
+    // Check if the environment variables are set
+    if (!binId || !masterKey) {
+        setError("Configuration error: JSONBin.io environment variables are not set.");
+        setIsLoading(false);
+        return;
+    }
+
+    const url = `https://api.jsonbin.io/v3/b/${binId}/latest`;
+
+    try {
+      const response = await fetch(url, {
+        headers: { 'X-Master-Key': masterKey }
+      });
+      if (!response.ok) {
+        throw new Error(`Failed to fetch data. Status: ${response.status}`);
+      }
+      const data = await response.json();
+      setDb(data.record); // The actual data is in the 'record' property
+    } catch (err) {
+      setError(`Error fetching data: ${err.message}. Please check your Bin ID and Master Key.`);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Run the fetch function once when the component mounts
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  // Function to handle saving the updated database back to JSONBin.io
+  // This will be passed to the AdminDashboard.
+  const handleSave = async (updatedDb) => {
+    const binId = import.meta.env.VITE_JSONBIN_BIN_ID;
+    const masterKey = import.meta.env.VITE_JSONBIN_MASTER_KEY;
+    const url = `https://api.jsonbin.io/v3/b/${binId}`;
+
+    try {
+      const response = await fetch(url, {
+        method: 'PUT', // PUT overwrites the entire bin with new data
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Master-Key': masterKey
+        },
+        body: JSON.stringify(updatedDb)
+      });
+      if (!response.ok) throw new Error('Failed to save data');
+
+      // On successful save, update the local state to match immediately
+      setDb(updatedDb); 
+      alert('Data saved successfully!');
+    } catch (err) {
+      alert('Error saving data: ' + err.message);
+    }
+  };
+
+  // Display a loading or error message while data is being fetched
+  if (isLoading) {
+    return <div className="text-center p-12 text-xl">Loading Application Data...</div>;
+  }
+  if (error) {
+    return <div className="p-8 m-8 text-center text-red-500 bg-red-100 border border-red-400 rounded-md">{error}</div>;
+  }
+  
+  return (
+    <Router>
+      <Routes>
+        {/* The HomePage receives the entire database as a prop */}
+        <Route path="/" element={<HomePage db={db} />} />
+
+        {/* The AdminDashboard receives the database and the function to save it */}
+        <Route path="/admin" element={<AdminDashboard db={db} handleSave={handleSave} />} />
+      </Routes>
+    </Router>
+  );
+}
+
+export default App;
